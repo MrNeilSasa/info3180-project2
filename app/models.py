@@ -44,7 +44,7 @@ class User(db.Model):
 
     def __repr__(self):
         return '<User %r>' % (self.username)    
-
+ 
 
 class Post(db.Model):
     __tablename__ = "Posts"
@@ -87,3 +87,6 @@ class Follows(db.Model):
         self.user_id = user_id
     def __repr__(self):
         return '<UserId %r>' % (self.follower_id)
+
+
+
