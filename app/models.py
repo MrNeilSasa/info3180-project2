@@ -44,3 +44,30 @@ class User(db.Model):
 
     def __repr__(self):
         return '<User %r>' % (self.username)    
+    
+
+class Likes(db.Model):
+    __tablename__ = "Likes"
+    id = db.Column(db.Integer, primary_key=True)
+    post_id = db.Column(db.Integer, unique=True)
+    user_id = db.Column(db.Integer, unique=True)
+
+    def __init__(self, post_id, user_id):
+        self.post_id = post_id
+        self.user_id = user_id
+    def __repr__(self):
+        return '<PostId %r>' % (self.post_id)
+    
+
+class Follows(db.Model):
+    __tablename__ = "Follows"
+    id = db.Column(db.Integer, primary_key=True)
+    follower_id = db.Column(db.Integer, unique=True)
+    user_id = db.Column(db.Integer, unique=True)   
+
+
+    def __init__(self, follower_id, user_id):
+        self.follwer_id = follower_id
+        self.user_id = user_id
+    def __repr__(self):
+        return '<UserId %r>' % (self.follower_id)
