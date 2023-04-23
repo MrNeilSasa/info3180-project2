@@ -44,23 +44,23 @@ class User(db.Model):
 
     def __repr__(self):
         return '<User %r>' % (self.username)    
- 
+
 
 class Post(db.Model):
     __tablename__ = "Posts"
     id = db.Column(db.Integer, primary_key=True)
-    caption = db.Column(db.String(300), unique=True)
+    caption = db.Column(db.String(300))
     photo = db.Column(db.String(500))
-    user_id = db.Column(db.Integer)
+    user_id = db.Column(db.Integer, unique=True)
     created_on = db.Column(db.DateTime, default=datetime.utcnow)
 
-def __init__(self, caption, photo, user_id):
-    self.caption = caption
-    self.photo = photo
-    self.user_id = user_id
+    def __init__(self, caption, photo, user_id):
+        self.caption = caption
+        self.photo = photo
+        self.user_id = user_id
 
-def __repr__(self):
-    return '<User %r>' % (self.user_id) 
+    def __repr__(self):
+        return '<User %r>' % (self.user_id) 
 
 class Likes(db.Model):
     __tablename__ = "Likes"
@@ -71,6 +71,7 @@ class Likes(db.Model):
     def __init__(self, post_id, user_id):
         self.post_id = post_id
         self.user_id = user_id
+    
     def __repr__(self):
         return '<PostId %r>' % (self.post_id)
     
@@ -85,6 +86,7 @@ class Follows(db.Model):
     def __init__(self, follower_id, user_id):
         self.follwer_id = follower_id
         self.user_id = user_id
+    
     def __repr__(self):
         return '<UserId %r>' % (self.follower_id)
 
