@@ -22,6 +22,9 @@
             <li class="nav-item">
               <RouterLink class="nav-link" to="/about">About</RouterLink>
             </li>
+            <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('login') }}">Login</a>
+            </li>
           </ul>
         </div>
       </div>
