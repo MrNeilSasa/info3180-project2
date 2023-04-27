@@ -5,15 +5,51 @@ Werkzeug Documentation:  https://werkzeug.palletsprojects.com/
 This file creates your application.
 """
 
-from app import app
-from flask import render_template, request, jsonify, send_file, flash, redirect, url_for
+
+from flask import render_template, request, jsonify, send_file, flash, redirect, url_for, g
 import os
-from flask_login import login_user, logout_user, current_user, login_required
+import jwt
 from app import app, db
 from app.forms import LoginForm
 from app.models import User
 from werkzeug.security import check_password_hash
+from werkzeug.utils import secure_filename
+from functools import wraps
+from datetime import datetime, timedelta
+from flask_wtf.csrf import generate_csrf
 
+
+
+def requires_auth(f):
+  @wraps(f)
+  def decorated(*args, **kwargs):
+    auth = request.headers.get('Authorization', None) # or request.cookies.get('token', None)
+
+    if not auth:
+      return jsonify({'code': 'authorization_header_missing', 'description': 'Authorization header is expected'}), 401
+
+    parts = auth.split()
+
+    if parts[0].lower() != 'bearer':
+      return jsonify({'code': 'invalid_header', 'description': 'Authorization header must start with Bearer'}), 401
+    elif len(parts) == 1:
+      return jsonify({'code': 'invalid_header', 'description': 'Token not found'}), 401
+    elif len(parts) > 2:
+      return jsonify({'code': 'invalid_header', 'description': 'Authorization header must be Bearer + \s + token'}), 401
+
+    token = parts[1]
+    try:
+        payload = jwt.decode(token, app.config['SECRET_KEY'], algorithms=["HS256"])
+
+    except jwt.ExpiredSignatureError:
+        return jsonify({'code': 'token_expired', 'description': 'token is expired'}), 401
+    except jwt.DecodeError:
+        return jsonify({'code': 'token_invalid_signature', 'description': 'Token signature is invalid'}), 401
+
+    g.current_user = user = payload
+    return f(*args, **kwargs)
+
+  return decorated
 
 
 ###
@@ -24,45 +60,37 @@ from werkzeug.security import check_password_hash
 def index():
     return jsonify(message="This is the beginning of our API")
 
-# @app.route('/login', methods=['POST', 'GET'])
-# def login():
-#     form = LoginForm()
+@app.route('/api/v1/auth/login', methods=['POST', 'GET'])
+def login():
+    form = LoginForm()
 
-#     # change this to actually validate the entire form submission
-#     # and not just one field
-#     if form.validate_on_submit():
-#         username = form.username.data
-#         password = form.password.data
-#         # Get the username and password values from the form.
+    if form.validate_on_submit():
+        username = form.username.data
+        password = form.password.data
+        user = db.session.execute(db.select(User).filter_by(username=username)).scalar()
 
-#         # Using your model, query database for a user based on the username
-#         user = db.session.execute(db.select(User).filter_by(username=username)).scalar()
-#         # and password submitted. Remember you need to compare the password hash.
-#         # You will need to import the appropriate function to do so.
-#         # Then store the result of that query to a `user` variable so it can be
-#         # passed to the login_user() method below.
+        if user is not None and check_password_hash(user.password, password):
+            timestamp = datetime.utcnow()
+            payload = {
+                "sub": 1,
+                "iat": timestamp,
+                "exp": timestamp + timedelta(minutes=55)
+            }
 
-#         # Gets user id, load into session
-#         if user is not None and check_password_hash(user.password, password):
-#             remember_me = False
+            token = jwt.encode(payload, app.config['SECRET_KEY'], algorithm='HS256')
 
-#             if 'remember_me' in request.form:
-#                 remember_me = True
+            return jsonify({'token': token, 'message': 'User successfully logged in.'}), 200
+        else:
+           return jsonify({'message': 'Invalid credentials'}), 401
 
-#             # If the user is not blank, meaning if a user was actually found,
-#             # then login the user and create the user session.
-#             # user should be an instance of your `User` class
-#             login_user(user, remember=remember_me)
+    else:
+        errors = form_errors(form)
+        response = {'errors': errors}
+        return jsonify(response=response)
 
-#             flash('Logged in successfully.', 'success')
-
-#             next_page = request.args.get('next')
-#             return redirect(next_page or url_for('home'))
-#         else:
-#             flash('Username or Password is incorrect.', 'danger')
-
-#     flash_errors(form)
-#     return render_template("login.html", form=form)
+@app.route('/api/v1/csrf-token', methods=['GET'])
+def get_csrf():
+    return jsonify({'csrf_token': generate_csrf()})
 
 
 ###
@@ -114,3 +142,5 @@ def flash_errors(form):
 def page_not_found(error):
     """Custom 404 page."""
     return render_template('404.html'), 404
+
+
