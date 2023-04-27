@@ -2,7 +2,9 @@
   <header>
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
       <div class="container-fluid">
-        <a class="navbar-brand" href="/">Photogram</a>
+        <a class="navbar-brand" href="/">
+          <img alt="camera logo" class="logo" src="@/assets/camera.svg" width="30" height="30" />
+          Photogram</a>
         <button
           class="navbar-toggler"
           type="button"
@@ -30,6 +32,8 @@
       </div>
     </nav>
   </header>
+  
+
 </template>
 
 <script setup>
