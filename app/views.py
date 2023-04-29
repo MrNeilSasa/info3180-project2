@@ -10,7 +10,8 @@ from flask import render_template, request, jsonify, send_file, flash, redirect,
 import os
 import jwt
 from app import app, db
-from app.forms import LoginForm
+import logging
+from app.forms import LoginForm, RegisterForm
 from app.models import User
 from werkzeug.security import check_password_hash
 from werkzeug.utils import secure_filename
@@ -18,7 +19,8 @@ from functools import wraps
 from datetime import datetime, timedelta
 from flask_wtf.csrf import generate_csrf
 
-
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 def requires_auth(f):
   @wraps(f)
@@ -92,6 +94,45 @@ def login():
 def get_csrf():
     return jsonify({'csrf_token': generate_csrf()})
 
+@app.route('/api/v1/users/register', methods=['POST'])
+def users():
+    form = RegisterForm()
+
+    if form.validate_on_submit():
+        username = form.username.data
+        password = form.password.data
+        firstname = form.firstname.data
+        lastname = form.lastname.data
+        email = form.email.data
+        location = form.location.data
+        biography = form.biography.data
+        profile_photo = form.profile_photo.data
+
+        filename = secure_filename(profile_photo.filename)
+        profile_photo.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+
+        user = User(username, password, firstname, lastname, email, location, biography, filename)
+        db.session.add(user)
+        db.session.commit()
+
+        message = 'Your account has been created!'
+        response = {
+            'message': message,
+            "firstname": firstname,
+            "lastname": lastname,
+            "username": username,
+            "password": password,
+            "email": email,
+            "location": location,
+            "biography": biography,
+            "profile_photo": filename,
+            "joined_on": datetime.utcnow(),
+        }
+        return jsonify(response=response), 201
+    else:
+        errors = form_errors(form)
+        response = {'errors': errors}
+        return jsonify(response= response)
 
 ###
 # The functions below should be applicable to all Flask apps.

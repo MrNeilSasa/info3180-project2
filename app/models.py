@@ -4,10 +4,10 @@ from werkzeug.security import generate_password_hash
 
 
 class User(db.Model):
-    __tablename__ = "Users"
+    __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True)
-    password = db.Column(db.String(80))
+    password = db.Column(db.String(500))
     firstname = db.Column(db.String(50))
     lastname = db.Column(db.String(50))
     email =  db.Column(db.String(80))
@@ -47,11 +47,11 @@ class User(db.Model):
 
 
 class Post(db.Model):
-    __tablename__ = "Posts"
+    __tablename__ = "posts"
     id = db.Column(db.Integer, primary_key=True)
     caption = db.Column(db.String(300))
     photo = db.Column(db.String(500))
-    user_id = db.Column(db.Integer, unique=True)
+    user_id = db.Column(db.Integer)
     created_on = db.Column(db.DateTime, default=datetime.utcnow)
 
     def __init__(self, caption, photo, user_id):
@@ -63,10 +63,10 @@ class Post(db.Model):
         return '<User %r>' % (self.user_id) 
 
 class Likes(db.Model):
-    __tablename__ = "Likes"
+    __tablename__ = "likes"
     id = db.Column(db.Integer, primary_key=True)
-    post_id = db.Column(db.Integer, unique=True)
-    user_id = db.Column(db.Integer, unique=True)
+    post_id = db.Column(db.Integer)
+    user_id = db.Column(db.Integer)
 
     def __init__(self, post_id, user_id):
         self.post_id = post_id
@@ -77,10 +77,10 @@ class Likes(db.Model):
     
 
 class Follows(db.Model):
-    __tablename__ = "Follows"
+    __tablename__ = "follows"
     id = db.Column(db.Integer, primary_key=True)
-    follower_id = db.Column(db.Integer, unique=True)
-    user_id = db.Column(db.Integer, unique=True)   
+    follower_id = db.Column(db.Integer)
+    user_id = db.Column(db.Integer)   
 
 
     def __init__(self, follower_id, user_id):

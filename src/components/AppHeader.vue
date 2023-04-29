@@ -1,10 +1,12 @@
+
+
 <template>
   <header>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
       <div class="container-fluid">
         <a class="navbar-brand" href="/">
           <img alt="camera logo" class="logo" src="@/assets/camera.svg" width="30" height="30" />
-          Photogram</a>
+           Photogram</a>
         <button
           class="navbar-toggler"
           type="button"
@@ -24,9 +26,7 @@
             <li class="nav-item">
               <RouterLink class="nav-link" to="/about">About</RouterLink>
             </li>
-            <li class="nav-item">
-              <RouterLink class="nav-link"  to="/login">Login</RouterLink>
-            </li>
+        
           </ul>
         </div>
       </div>
@@ -38,8 +38,19 @@
 
 <script setup>
 import { RouterLink } from "vue-router";
+
 </script>
 
 <style>
 /* Add any component specific styles here */
+@import url('https://fonts.googleapis.com/css2?family=Lobster&display=swap');
+
+.navbar{
+  background-color: rgb(11, 126, 192);
+  }
+
+.navbar-brand{
+  font-family:'Lobster', cursive;
+  
+}  
 </style>

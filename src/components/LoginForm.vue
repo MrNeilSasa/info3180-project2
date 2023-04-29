@@ -49,8 +49,9 @@ function loginUser() {
 </script>
 
 <template>
-  <form @submit.prevent="loginUser" id="loginForm" method="post">
     <h2>Login</h2>
+  <form @submit.prevent="loginUser" id="loginForm" method="post" class="form">
+    
 
     <div class="mb-3">
       <label for="username" class="form-label">Username</label>
@@ -68,3 +69,33 @@ function loginUser() {
     <button class="btn btn-success" type="submit">Login</button>
   </form>
 </template>
+
+
+<style>
+.form{
+position: absolute;
+top: 150px;
+left: 475px;
+border: 1px solid #ccc;
+padding: 20px;
+width: 500px;
+margin: 0 auto;
+background-color: white;
+border-radius: 5px;
+}
+
+body{
+    background-color: antiquewhite;
+}
+
+h2{
+position: absolute;
+top: 108px;
+left: 475px;
+
+}
+button{
+    width: 100%;
+
+}
+</style>
