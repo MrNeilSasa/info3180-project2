@@ -136,7 +136,7 @@ function createUser()  {
 </style>
 
 <template>
-<form @submit.prevent="createUser" id="registration" method="post">
+<form @submit.prevent="createUser" id="registration" method="post" class = "form">
     <div class="alert alert-success" v-if="successMessage">{{ successMessage }}</div>
 
     <div v-if="errorMessage.length">
@@ -183,3 +183,41 @@ function createUser()  {
 </form>
 
 </template>
+
+<style>
+.form{
+position: absolute;
+top: 150px;
+left: 475px;
+border: 1px solid #ccc;
+padding: 20px;
+width: 500px;
+margin: 0 auto;
+background-color: white;
+border-radius: 5px;
+}
+
+body{
+    background-color: antiquewhite;
+}
+
+h2{
+position: absolute;
+top: 108px;
+left: 475px;
+
+}
+button{
+    width: 100%;
+
+}
+
+input[type="file"] {
+  background-color: #f1f1f1;
+  border: 1px solid #ccc;
+  color: #333;
+  font-size: 16px;
+  padding: 10px;
+}
+
+</style>
