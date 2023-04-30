@@ -77,7 +77,7 @@ function loginUser() {
         if (data.errors) {
           errorMessage.value = data.errors;
         } else {
-          errorMessage.value = ["An unexpected error occurred."];
+          errorMessage.value = ["Invalid Credentials."];
         }
         successMessage.value = "";
         console.log(data);

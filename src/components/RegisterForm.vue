@@ -25,7 +25,7 @@ onMounted(() => {
 });
 
 function createUser()  {
-    let form = document.querySelector("#registration");
+    let form = document.querySelector("#post-form");
     let formData = new FormData(form);
 
     const firstname = formData.get('firstname');

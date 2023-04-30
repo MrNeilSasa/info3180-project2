@@ -11,8 +11,8 @@ import os
 import jwt
 from app import app, db
 import logging
-from app.forms import LoginForm, RegisterForm
-from app.models import User
+from app.forms import LoginForm, RegisterForm, PostForm
+from app.models import User, Post
 from werkzeug.security import check_password_hash
 from werkzeug.utils import secure_filename
 from functools import wraps
@@ -129,6 +129,68 @@ def users():
             "joined_on": datetime.utcnow(),
         }
         return jsonify(response=response), 201
+    else:
+        errors = form_errors(form)
+        response = {'errors': errors}
+        return jsonify(response= response)
+
+@app.route('/api/v1/users/<int:user_id>', methods=['GET'])
+@requires_auth
+def get_user(user_id):
+    user = User.query.get(user_id)
+    if user is None:
+        return jsonify({'message': 'User not found'}), 404
+    
+    posts = Post.query.filter_by(user_id=user_id).all()
+    posts_list = []
+    for post in posts:
+        user_posts = {
+            'id': post.id,
+            'user_id': post.user_id,
+            'photo': post.photo,
+            'description': post.caption,
+            'created_on': post.created_on.strftime('%Y-%m-%d %H:%M:%S')
+        }
+        posts_list.append(user_posts)
+
+    response = {
+        'id': user.id,
+        'username': user.username,
+        'firstname': user.firstname,
+        'lastname': user.lastname,
+        'email': user.email,
+        'location': user.location,
+        'biography': user.biography,
+        'profile_photo': user.profile_photo,
+        'joined_on': user.joined_on.strftime('%B, %Y'),
+        'posts': posts_list
+    }    
+    return jsonify(response), 200
+    
+
+@app.route('/api/v1/users/<int:user_id>/posts', methods=['POST'])
+@requires_auth
+def create_post(user_id):
+    form = PostForm()
+
+    if form.validate_on_submit():
+
+        post_photo = form.post_photo.data
+        caption = form.caption.data
+
+        filename = secure_filename(post_photo.filename)
+        post_photo.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+
+        post = Post(caption, filename, user_id)
+        db.session.add(post)
+        db.session.commit()
+
+        message = 'Successfully created a new post'
+        response = {
+            'message': message
+        }
+        return jsonify(response=response), 201
+    
     else:
         errors = form_errors(form)
         response = {'errors': errors}
