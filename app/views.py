@@ -174,6 +174,7 @@ def create_post(user_id):
     form = PostForm()
 
     if form.validate_on_submit():
+
         post_photo = form.post_photo.data
         caption = form.caption.data
 

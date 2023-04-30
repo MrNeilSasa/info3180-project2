@@ -8,7 +8,7 @@ let errorMessage = ref([]);
 let postPic = ref(null);
 let user_id = ref(null);
 
-const state = toRefs({ postPic, csrf_token, successMessage, errorMessage });
+const state = toRefs({ postPic, user_id, csrf_token, successMessage, errorMessage });
 
 function getCsrfToken(){
     fetch('/api/v1/csrf-token')
@@ -23,6 +23,7 @@ function getUserId(){
    const token = localStorage.getItem('token');
    const decodedToken = JSON.parse(atob(token.split('.')[1]));
    user_id.value = decodedToken.sub;
+   console.log(user_id.value);
 }
 
 onMounted(() => {
@@ -30,9 +31,11 @@ onMounted(() => {
     getUserId();
 });
 
-function createPost()  {
-    let form = document.querySelector("#newPost");
+function newPost()  {
+    let form = document.querySelector("#newPostForm");
     let formData = new FormData(form)
+
+    formData.append('user_id', user_id.value);
 
     const post_photo = state.postPic.value.files[0];
     const caption = formData.get('caption');
@@ -57,13 +60,16 @@ function createPost()  {
         return;
     }
 
+    
+
     console.log(Array.from(formData.entries()));
 
-    fetch("/api/v1/users/${user_id.value}/posts", {
+    
+
+    fetch('/api/v1/users/' + user_id.value + '/posts', {
         method: 'POST',
         body: formData,
         headers: {
-            'Content-Type': 'multipart/form-data',
             'X-CSRFToken': csrf_token.value,
             'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -102,7 +108,7 @@ function createPost()  {
 </style>
 
 <template>
-<form @submit.prevent="createPost" id="newPost" method="post" class = "form">
+<form @submit.prevent="newPost" id="newPostForm" method="post" class = "form">
     <div class="alert alert-success" v-if="successMessage">{{ successMessage }}</div>
 
     <div v-if="errorMessage.length">
