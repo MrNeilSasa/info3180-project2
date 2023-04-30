@@ -188,7 +188,7 @@ function createUser()  {
 .form{
 position: absolute;
 top: 150px;
-left: 475px;
+left: 35%;
 border: 1px solid #ccc;
 padding: 20px;
 width: 500px;
@@ -198,7 +198,7 @@ border-radius: 5px;
 }
 
 body{
-    background-color: antiquewhite;
+    background-color: rgb(251, 233, 203);
 }
 
 h2{

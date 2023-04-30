@@ -126,7 +126,7 @@ border-radius: 5px;
 }
 
 body{
-    background-color: antiquewhite;
+    background-color: rgb(201, 197, 191);
 }
 
 h2{
