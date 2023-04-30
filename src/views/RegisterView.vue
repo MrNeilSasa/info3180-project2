@@ -12,3 +12,7 @@ let register = ref([])
         <RegisterForm />
     </div>
 </template>
+
+<style>
+
+</style>
