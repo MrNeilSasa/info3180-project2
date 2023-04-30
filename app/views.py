@@ -11,8 +11,8 @@ import os
 import jwt
 from app import app, db
 import logging
-from app.forms import LoginForm, RegisterForm
-from app.models import User
+from app.forms import LoginForm, RegisterForm, PostForm
+from app.models import User, Post
 from werkzeug.security import check_password_hash
 from werkzeug.utils import secure_filename
 from functools import wraps
@@ -129,6 +129,36 @@ def users():
             "joined_on": datetime.utcnow(),
         }
         return jsonify(response=response), 201
+    else:
+        errors = form_errors(form)
+        response = {'errors': errors}
+        return jsonify(response= response)
+    
+
+@app.route('/api/v1/users/user_id/posts', methods=['POST'])
+def create_post():
+    form = PostForm()
+
+    if form.validate_on_submit():
+        post_photo = form.post_photo.data
+        caption = form.caption.data
+
+        filename = secure_filename(post_photo.filename)
+        post_photo.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+
+        post = Post(post_photo, caption, filename)
+        db.session.add(post)
+        db.session.commit()
+
+        message = 'Your post has been created!'
+        response = {
+            'message': message,
+            "profile_photo": filename,
+            "caption" : caption,
+            "joined_on": datetime.utcnow(),
+        }
+        return jsonify(response=response), 201
+    
     else:
         errors = form_errors(form)
         response = {'errors': errors}

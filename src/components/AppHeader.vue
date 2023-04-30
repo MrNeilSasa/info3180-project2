@@ -26,7 +26,10 @@
             <li class="nav-item">
               <RouterLink class="nav-link" to="/about">About</RouterLink>
             </li>
-        
+            <li class="nav-item">
+              <RouterLink class="nav-link" to="/api/v1/users/user_id/posts">Post</RouterLink>
+            </li>
+            
           </ul>
         </div>
       </div>
