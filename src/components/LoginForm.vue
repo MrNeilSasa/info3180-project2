@@ -3,7 +3,7 @@ import { ref, onMounted, toRefs } from 'vue';
 
 let csrf_token = ref("");
 let successMessage = ref("");
-let errorMessage = ref("");
+let errorMessage = ref([]);
 let formSubmitted = ref(false);
 
 const state = toRefs({ csrf_token, successMessage, errorMessage });
@@ -24,49 +24,90 @@ onMounted(() => {
 });
 
 function loginUser() {
+  let form = document.querySelector("#loginForm");
+  let formData = new FormData(form);
+
+  const errors = [];
+
+  if (!formData.get('username') || formData.get('username').trim() === '') {
+    errors.push('Error in Username field - This field is required.');
+  }
+
+  if (!formData.get('password') || formData.get('password').trim() === '') {
+    errors.push('Error in Password field - This field is required.');
+  }
+
+  if (errors.length > 0) {
+    errorMessage.value = errors;
+    return;
+  }
+
   formSubmitted.value = true;
-  fetch('http://localhost:8080/api/v1/auth/login', {
+
+  const jsonData = Object.fromEntries(formData.entries());
+
+  fetch('/api/v1/auth/login', {
     method: 'POST',
+    body: JSON.stringify(jsonData),
     headers: {
       'Content-Type': 'application/json',
+      'X-CSRFToken': csrf_token.value,
     },
-    body: JSON.stringify({
-      username: username.value,
-      password: password.value
-    }),
   })
-    .then((response) => response.json())
+    .then((response) => {
+      if (response.ok) {
+        return response.json();
+      } else {
+        throw response;
+      }
+    })
     .then((data) => {
       if (data.token) {
         successMessage.value = data.message;
         // You can store the token in localStorage or use it as needed
         localStorage.setItem('token', data.token);
+        console.log(data.token);
+        window.location.href = '/about';
       } else {
-        errorMessage.value = data.message;
+        errorMessage.value = [data.message];
       }
+    })
+    .catch((error) => {
+      error.json().then((data) => {
+        if (data.errors) {
+          errorMessage.value = data.errors;
+        } else {
+          errorMessage.value = ["An unexpected error occurred."];
+        }
+        successMessage.value = "";
+        console.log(data);
+      });
     });
 }
+
 </script>
 
 <template>
-    <h2>Login</h2>
   <form @submit.prevent="loginUser" id="loginForm" method="post" class="form">
-    
+    <div v-if="errorMessage.length">
+      <div class="alert alert-danger" v-for="(error, index) in errorMessage" :key="index">
+        {{ error }}
+      </div>
+    </div>
 
-    <div class="mb-3">
+    <div class="form-group mb-3">
       <label for="username" class="form-label">Username</label>
-      <input v-model="username" type="text" class="form-control" id="username" placeholder="Enter User Name">
+      <input type="text" name="username" v-model="username" class="form-control" />
     </div>
 
-    <div class="mb-3">
+    <div class="form-group mb-3">
       <label for="password" class="form-label">Password</label>
-      <input v-model="password" type="password" class="form-control" id="password" placeholder="Enter Password">
+      <input type="password" name="password" v-model="password" class="form-control" />
     </div>
+
+    <button type="submit" class="btn btn-success">Login</button>
 
     <p v-if="formSubmitted && successMessage" class="alert alert-success">{{ successMessage }}</p>
-    <p v-if="formSubmitted && errorMessage" class="alert alert-danger">{{ errorMessage }}</p>
-    
-    <button class="btn btn-success" type="submit">Login</button>
   </form>
 </template>
 

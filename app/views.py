@@ -17,6 +17,7 @@ from werkzeug.security import check_password_hash
 from werkzeug.utils import secure_filename
 from functools import wraps
 from datetime import datetime, timedelta
+from flask_cors import cross_origin
 from flask_wtf.csrf import generate_csrf
 
 logging.basicConfig(level=logging.DEBUG)
@@ -62,33 +63,32 @@ def requires_auth(f):
 def index():
     return jsonify(message="This is the beginning of our API")
 
-@app.route('/api/v1/auth/login', methods=['POST', 'GET'])
+@app.route('/api/v1/auth/login', methods=['POST'])
+@cross_origin(origin='*', headers=['Content-Type', 'Authorization'])
 def login():
-    form = LoginForm()
+    username = request.json.get('username')
+    password = request.json.get('password')
+    
+    if not username or not password:
+        return jsonify({'message': 'Missing username or password'}), 400
+    
+    user = User.query.filter_by(username=username).first()
 
-    if form.validate_on_submit():
-        username = form.username.data
-        password = form.password.data
-        user = db.session.execute(db.select(User).filter_by(username=username)).scalar()
+    if user is None or not check_password_hash(user.password, password):
+        return jsonify({'message': 'Invalid credentials'}), 401
 
-        if user is not None and check_password_hash(user.password, password):
-            timestamp = datetime.utcnow()
-            payload = {
-                "sub": 1,
-                "iat": timestamp,
-                "exp": timestamp + timedelta(minutes=55)
-            }
+    timestamp = datetime.utcnow()
+    payload = {
+        "sub": user.id,
+        "iat": timestamp,
+        "exp": timestamp + timedelta(minutes=55)
+    }
 
-            token = jwt.encode(payload, app.config['SECRET_KEY'], algorithm='HS256')
+    token = jwt.encode(payload, app.config['SECRET_KEY'], algorithm='HS256')
 
-            return jsonify({'token': token, 'message': 'User successfully logged in.'}), 200
-        else:
-           return jsonify({'message': 'Invalid credentials'}), 401
+    return jsonify({'token': token, 'message': 'User successfully logged in.'}), 200
 
-    else:
-        errors = form_errors(form)
-        response = {'errors': errors}
-        return jsonify(response=response)
+
 
 @app.route('/api/v1/csrf-token', methods=['GET'])
 def get_csrf():
