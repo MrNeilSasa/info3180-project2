@@ -195,6 +195,28 @@ def create_post(user_id):
         errors = form_errors(form)
         response = {'errors': errors}
         return jsonify(response= response)
+    
+@app.route('/api/v1/users/<int:user_id>/posts', methods=['GET']) 
+@requires_auth
+def view_user_posts(user_id):
+    user = User.query.get(user_id)
+    if user is None:
+        return jsonify({'message': 'User not found'}), 404
+    
+    posts = Post.query.filter_by(user_id=user_id).all()
+    post_list = []
+    for post in posts:
+        post_list.append({
+            'id': post.id,
+            'user_id': post.user_id,
+            'photo': post.photo,
+            'description': post.description,
+            'created_on': post.created_on
+        })
+    response = {
+        'posts': post_list
+    }
+    return jsonify(response), 200
 
 ###
 # The functions below should be applicable to all Flask apps.

@@ -7,7 +7,7 @@ let post = ref([])
 
 <template>
     <div>
-        <h1>Post</h1>
+        <h1>New Post</h1>
         <PostForm />
     </div>
 </template>
