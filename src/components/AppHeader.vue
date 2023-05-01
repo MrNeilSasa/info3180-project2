@@ -27,7 +27,7 @@
               <RouterLink class="nav-link" to="/explore">Explore</RouterLink>
             </li>
             <li class="nav-item">
-              <RouterLink class="nav-link" to="/posts">Post</RouterLink>
+              <RouterLink class="nav-link" to="/myProfile">My Profile</RouterLink>
             </li>
             
           </ul>
@@ -55,5 +55,18 @@ import { RouterLink } from "vue-router";
 .navbar-brand{
   font-family:'Lobster', cursive;
   
-}  
+} 
+
+.navbar-nav {
+  display: flex;
+  align-items: center;
+}
+
+.navbar-nav ul {
+  justify-self: right;
+  justify-content: right;
+  align-items: right;
+  align-self: right;
+}
+
 </style>
