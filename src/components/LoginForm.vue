@@ -67,7 +67,7 @@ function loginUser() {
         // You can store the token in localStorage or use it as needed
         localStorage.setItem('token', data.token);
         console.log(data.token);
-        window.location.href = '/about';
+        window.location.href = '/explore';
       } else {
         errorMessage.value = [data.message];
       }

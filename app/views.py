@@ -6,13 +6,13 @@ This file creates your application.
 """
 
 
-from flask import render_template, request, jsonify, send_file, flash, redirect, url_for, g
+from flask import render_template, request, jsonify, send_file, flash, redirect, url_for, g, send_from_directory
 import os
 import jwt
 from app import app, db
 import logging
 from app.forms import LoginForm, RegisterForm, PostForm
-from app.models import User, Post
+from app.models import User, Post, Likes, Follows
 from werkzeug.security import check_password_hash
 from werkzeug.utils import secure_filename
 from functools import wraps
@@ -210,13 +210,51 @@ def view_user_posts(user_id):
             'id': post.id,
             'user_id': post.user_id,
             'photo': post.photo,
-            'description': post.description,
+            'description': post.caption,
             'created_on': post.created_on
         })
     response = {
         'posts': post_list
     }
     return jsonify(response), 200
+
+@app.route('/api/v1/posts', methods=['GET'])
+@requires_auth
+def view_posts():
+    posts = Post.query.all()
+    post_list = []
+    for post in posts:
+        post_list.append({
+            'id': post.id,
+            'user_id': post.user_id,
+            'photo': url_for('getImage', filename=post.photo),
+            'caption': post.caption,
+            'created_on': post.created_on,
+            'likes': Likes.query.filter_by(post_id=post.id).count()
+        })
+    response = {
+        'posts': post_list
+    }
+    return jsonify(response), 200
+
+@app.route('/api/v1/users/<int:user_id>/follow', methods=['GET'])
+@requires_auth
+def followers(user_id):
+    user = User.query.get(user_id)
+    if user is None:
+        return jsonify({'message': 'User not found'}), 404
+    
+    followers = Follows.query.filter_by(user_id=user_id).count()
+
+    response = {
+        'followers': followers
+    }
+
+    return jsonify(response), 200
+
+@app.route("/api/v1/posts/<path:filename>")
+def getImage(filename):
+    return send_from_directory(os.path.join(os.getcwd(), app.config['UPLOAD_FOLDER']), filename)
 
 ###
 # The functions below should be applicable to all Flask apps.
